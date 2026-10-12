@@ -1,0 +1,1248 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Plantão Acadêmico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: painel de plantão — cabeçalho com faixa de triagem (Manchester), abas, colunas que viram uma só no celular */
+:root{
+  --bg:#f2f5f4; --surface:#ffffff; --surface-2:#e8eeec; --ink:#13201e; --ink-2:#475754; --ink-3:#7a8986;
+  --line:#d4ddda; --accent:#1c6a62; --accent-ink:#ffffff; --accent-soft:#d3e8e4;
+  --t-red:#d0372d; --t-orange:#e2741a; --t-yellow:#d4a20a; --t-green:#2c9653; --t-blue:#2d6cc0;
+  --bad:#c0362d; --ok:#2c8a4f; --warnbg:#fbf0d6; --warnink:#7a5508;
+  --shadow:0 1px 2px rgba(19,32,30,.06),0 6px 20px rgba(19,32,30,.06);
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1312; --surface:#141c1b; --surface-2:#1b2524; --ink:#e3ebe9; --ink-2:#a3b2af; --ink-3:#6f7f7c;
+  --line:#26322f; --accent:#5cbcae; --accent-ink:#04201c; --accent-soft:#183733;
+  --t-red:#ee5a4f; --t-orange:#f28f3c; --t-yellow:#e8bd30; --t-green:#47b46e; --t-blue:#5a92e0;
+  --bad:#ee6a5f; --ok:#52bb78; --warnbg:#3a2f12; --warnink:#f0cf7d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1312; --surface:#141c1b; --surface-2:#1b2524; --ink:#e3ebe9; --ink-2:#a3b2af; --ink-3:#6f7f7c;
+  --line:#26322f; --accent:#5cbcae; --accent-ink:#04201c; --accent-soft:#183733;
+  --t-red:#ee5a4f; --t-orange:#f28f3c; --t-yellow:#e8bd30; --t-green:#47b46e; --t-blue:#5a92e0;
+  --bad:#ee6a5f; --ok:#52bb78; --warnbg:#3a2f12; --warnink:#f0cf7d;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1140px;margin:0 auto;padding-inline:20px;padding-block:14px 110px}
+@media (max-width:560px){.wrap{padding-inline:16px}}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.ic{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* header */
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-block:6px 12px}
+.brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}
+.strip{display:grid;grid-template-rows:repeat(5,5px);gap:2px;width:8px}
+.strip i{display:block;border-radius:2px}
+.strip i:nth-child(1){background:var(--t-red)}.strip i:nth-child(2){background:var(--t-orange)}.strip i:nth-child(3){background:var(--t-yellow)}.strip i:nth-child(4){background:var(--t-green)}.strip i:nth-child(5){background:var(--t-blue)}
+.wordmark{font-family:var(--f-display);font-weight:800;font-stretch:78%;font-size:27px;letter-spacing:.01em;line-height:1;text-transform:uppercase}
+.wordmark small{display:block;font-family:var(--f-body);font-weight:500;font-size:12px;letter-spacing:.04em;text-transform:none;color:var(--ink-3);margin-top:3px;font-stretch:100%}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);padding:5px 10px;border-radius:99px;white-space:nowrap}
+.status i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.status.local i{background:var(--t-yellow)}.status.err i{background:var(--bad)}.status.busy i{background:var(--t-blue)}
+.iconbtn{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2)}
+.iconbtn:hover{color:var(--ink);border-color:var(--ink-3)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tabs button{display:flex;align-items:center;gap:8px;background:none;border:0;padding:10px 14px 11px;font-weight:600;color:var(--ink-3);border-bottom:2.5px solid transparent;margin-bottom:-1px}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs .badge{font-family:var(--f-mono);font-size:11px;font-weight:500;background:var(--t-red);color:#fff;border-radius:99px;padding:0 6px;line-height:17px}
+@media (max-width:760px){
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;background:var(--surface);border-top:1px solid var(--line);border-bottom:0;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .tabs button{flex-direction:column;gap:3px;font-size:11.5px;padding:9px 4px 8px;border-bottom:0;border-top:2.5px solid transparent;margin:0}
+  .tabs button[aria-selected="true"]{border-top-color:var(--accent);border-bottom-color:transparent}
+  .tabs .badge{position:absolute;transform:translate(12px,-4px)}
+  .tabs button{position:relative}
+}
+
+/* generic */
+h2.sec{font-family:var(--f-display);font-weight:700;font-stretch:85%;font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);margin:0 0 10px;display:flex;align-items:center;gap:8px;text-wrap:balance}
+h2.sec .count{font-family:var(--f-mono);letter-spacing:0;color:var(--ink-3);font-weight:400}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+.muted{color:var(--ink-3)}
+.small{font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 13px;font-weight:500;font-size:14px;color:var(--ink);white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--surface-2);color:var(--ink)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:9px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:7px;font-size:13.5px;font-weight:500;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:2px 9px 2px 7px;border-radius:99px;background:color-mix(in srgb,var(--c,var(--ink-3)) 15%,transparent);color:var(--ink);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c,var(--ink-3));flex:none}
+.chip.plain::before{display:none}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 12px;font-size:13px;display:inline-flex;align-items:center;gap:7px;color:var(--ink-2)}
+.filters button .d{width:8px;height:8px;border-radius:50%;background:var(--c,var(--ink-3))}
+.filters button .n{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3)}
+.filters button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);background:var(--surface-2)}
+
+/* inputs */
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:500;color:var(--ink-2);min-width:0}
+.inp{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;font-size:14.5px;min-width:0}
+.inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea.inp{resize:vertical;min-height:70px}
+.err{color:var(--bad);font-size:12.5px}
+
+/* quick capture */
+.capture{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;margin-bottom:20px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:var(--shadow)}
+.capture .main{border:0;padding:9px 10px;font-size:15.5px;background:transparent}
+.capture .main:focus{box-shadow:none}
+.capture select.inp{width:auto;max-width:170px;background:var(--surface-2);border-color:transparent;font-size:13.5px}
+.capture .date{width:auto}
+@media (max-width:760px){.capture{grid-template-columns:1fr 1fr}.capture .main{grid-column:1/-1}.capture select.inp{max-width:none;width:100%}.capture .btn{grid-column:1/-1}}
+
+/* task rows */
+.tlist{display:flex;flex-direction:column;gap:6px}
+.task{--tc:var(--line);display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:9px;padding:9px 10px 9px 11px}
+.task.l0{--tc:var(--t-red)}.task.l1{--tc:var(--t-orange)}.task.l2{--tc:var(--t-yellow)}.task.l3{--tc:var(--t-green)}.task.l4{--tc:var(--t-blue)}
+.task.done{opacity:.6;--tc:var(--line)}
+.task.done .ttitle{text-decoration:line-through}
+.chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink-3);background:transparent;display:grid;place-items:center;padding:0;color:transparent}
+.chk:hover{border-color:var(--accent);color:var(--accent)}
+.task.done .chk{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chk .ic{width:13px;height:13px;stroke-width:3}
+.tmain{min-width:0;cursor:pointer}
+.ttitle{font-weight:500;overflow-wrap:anywhere}
+.tmeta{display:flex;gap:6px 10px;flex-wrap:wrap;align-items:center;margin-top:3px;font-size:12.5px;color:var(--ink-3)}
+.tmeta .due.late{color:var(--bad);font-weight:600}
+.tmeta .due.today{color:var(--t-orange);font-weight:600}
+.tact{display:flex;gap:2px}
+.tact button{width:32px;height:32px;border-radius:8px;border:0;background:transparent;color:var(--ink-3);display:grid;place-items:center}
+.tact button:hover{background:var(--surface-2);color:var(--ink)}
+.tact button.on{color:var(--accent)}
+.empty{border:1.5px dashed var(--line);border-radius:var(--r);padding:16px;color:var(--ink-3);font-size:14px;text-align:left}
+
+/* hoje */
+.today-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.today-grid{grid-template-columns:minmax(0,1fr)}}
+.dayhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.dayhead h1{font-family:var(--f-display);font-weight:750;font-stretch:88%;font-size:clamp(24px,3.4vw,32px);margin:0;line-height:1.1;text-wrap:balance}
+.sumline{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font-size:12.5px;font-weight:500;border-radius:99px;padding:3px 10px;background:var(--surface-2);color:var(--ink-2)}
+.pill.bad{background:color-mix(in srgb,var(--t-red) 16%,transparent);color:var(--ink)}
+.pill.warn{background:color-mix(in srgb,var(--t-orange) 18%,transparent);color:var(--ink)}
+.focus{--tc:var(--accent);position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--shadow);overflow:hidden}
+.focus::before{content:"";position:absolute;inset:0 auto 0 0;width:6px;background:var(--tc)}
+.focus.l0{--tc:var(--t-red)}.focus.l1{--tc:var(--t-orange)}.focus.l2{--tc:var(--t-yellow)}.focus.l3{--tc:var(--t-green)}.focus.l4{--tc:var(--t-blue)}
+.focus .eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-stretch:85%;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.focus .eyebrow .tri{color:var(--tc)}
+.focus h3{font-family:var(--f-display);font-weight:700;font-stretch:92%;font-size:clamp(21px,2.6vw,26px);line-height:1.18;margin:8px 0 8px;overflow-wrap:anywhere;text-wrap:balance}
+.focus .why{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.focus .why span{font-size:12.5px;background:var(--surface-2);border-radius:6px;padding:2px 8px;color:var(--ink-2)}
+.focus .acts{display:flex;gap:8px;flex-wrap:wrap}
+.kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.kv div{background:var(--surface-2);border-radius:8px;padding:9px 11px;min-width:0}
+.kv b{display:block;font-family:var(--f-mono);font-size:20px;font-weight:500;line-height:1.2}
+.kv span{font-size:12px;color:var(--ink-3)}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:13px;margin-top:10px}
+.legend div{display:flex;gap:8px;align-items:center}
+.legend i{width:12px;height:12px;border-radius:3px;flex:none}
+details summary{cursor:pointer;font-weight:500;font-size:13.5px;color:var(--ink-2)}
+.welcome h3{font-family:var(--f-display);font-stretch:90%;font-size:22px;margin:0 0 6px}
+.welcome ol{margin:8px 0 14px;padding-left:20px;color:var(--ink-2)}
+.welcome li{margin:4px 0}
+
+/* matriz */
+.matrix{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:700px){.matrix{grid-template-columns:minmax(0,1fr)}}
+.quad{background:var(--surface-2);border-radius:12px;padding:12px;min-width:0}
+.quad h4{margin:0 0 2px;font-family:var(--f-display);font-stretch:88%;font-size:16px}
+.quad p{margin:0 0 10px;font-size:12.5px;color:var(--ink-3)}
+
+/* feito */
+.logform{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.logform .c2{grid-column:span 2}.logform .c3{grid-column:span 3}.logform .c6{grid-column:1/-1}.logform .c1{grid-column:span 1}
+@media (max-width:760px){.logform{grid-template-columns:repeat(2,minmax(0,1fr))}.logform .c2,.logform .c3,.logform .c6{grid-column:1/-1}.logform .c1{grid-column:span 1}}
+.types{display:flex;gap:6px;flex-wrap:wrap}
+.types button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 11px;font-size:13px;color:var(--ink-2)}
+.types button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.weeknav{display:flex;align-items:center;gap:6px}
+.weeknav .lbl{font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:18px;min-width:150px;text-align:center}
+.daygroup{display:flex;flex-direction:column;gap:6px}
+.daygroup h5{margin:4px 0 0;font-size:12.5px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+.entry{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer}
+.entry:hover{border-color:var(--ink-3)}
+.tag{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.tag.tarefa{background:var(--accent-soft);color:var(--ink)}
+.entry .body{min-width:0}
+.entry .s{font-weight:600}
+.entry .t{color:var(--ink-2);overflow-wrap:anywhere}
+.entry .n{font-family:var(--f-mono);font-size:13px;color:var(--ink-2);text-align:right;white-space:nowrap}
+.entry .note{font-size:12.5px;color:var(--ink-3);margin-top:2px;overflow-wrap:anywhere}
+.totals{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--ink-3)}
+.totals b{font-family:var(--f-mono);font-weight:500;color:var(--ink);font-size:15px;margin-right:4px}
+
+/* grade (planilha) */
+.gridwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table.sheet{border-collapse:separate;border-spacing:0;font-size:12.5px;min-width:100%}
+table.sheet th,table.sheet td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+table.sheet thead th{position:sticky;top:0;background:var(--surface-2);font-family:var(--f-mono);font-weight:500;color:var(--ink-2);white-space:nowrap}
+table.sheet thead th.cur{color:var(--accent);background:var(--accent-soft)}
+table.sheet th.rowh{position:sticky;left:0;z-index:1;background:var(--surface);font-weight:600;min-width:120px;max-width:180px;overflow-wrap:anywhere}
+table.sheet thead th.rowh{z-index:2;background:var(--surface-2)}
+table.sheet td{min-width:120px;max-width:170px}
+table.sheet td.cur{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+table.sheet td .ln{display:block;cursor:pointer;border-radius:4px;padding:1px 2px;overflow-wrap:anywhere}
+table.sheet td .ln:hover{background:var(--surface-2)}
+table.sheet td .ln .q{font-family:var(--f-mono);color:var(--ink-2)}
+
+/* progresso */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:860px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.kpi b{display:block;font-family:var(--f-mono);font-weight:500;font-size:26px;line-height:1.15}
+.kpi span{font-size:12.5px;color:var(--ink-3)}
+.two{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.two{grid-template-columns:minmax(0,1fr)}}
+.chart svg{width:100%;height:auto;display:block}
+.chart .axis{stroke:var(--line)}
+.chart text{fill:var(--ink-3);font-family:var(--f-mono);font-size:10px}
+.chart .bar{fill:var(--accent)}
+.chart .bar.cur{fill:var(--t-orange)}
+.chart .val{fill:var(--ink-2)}
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,13px);grid-auto-columns:13px;gap:3px;overflow-x:auto;padding-bottom:4px}
+.heat i{border-radius:3px;background:var(--surface-2)}
+.heat i.h1{background:color-mix(in srgb,var(--accent) 35%,var(--surface-2))}
+.heat i.h2{background:color-mix(in srgb,var(--accent) 62%,var(--surface-2))}
+.heat i.h3{background:var(--accent)}
+.heat i.fut{background:transparent}
+.heatwrap{display:flex;gap:8px}
+.heatdays{display:grid;grid-template-rows:repeat(7,13px);gap:3px;font-size:10px;color:var(--ink-3);font-family:var(--f-mono)}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);font-weight:600;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-size:13px}
+.tbl td:first-child{font-family:var(--f-body);font-weight:500;font-size:13.5px;overflow-wrap:anywhere}
+.tbl tr.stale td:last-child{color:var(--bad)}
+.tblwrap{overflow-x:auto}
+.areabar{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px;margin:6px 0}
+.areabar .track{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.areabar .track i{display:block;height:100%;background:var(--c);border-radius:99px}
+.areabar .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* banner, toast, modal */
+.banner{background:var(--warnbg);color:var(--warnink);border-radius:10px;padding:10px 14px;font-size:13.5px;margin-bottom:16px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);border-radius:10px;padding:10px 12px 10px 16px;display:flex;align-items:center;gap:12px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.25);width:max-content;max-width:calc(100% - 32px)}
+.toast button{background:transparent;border:0;color:var(--t-yellow);font-weight:600;padding:4px 6px}
+@media (max-width:760px){.toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(8,14,13,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(5vh,16px) 16px 16px;overflow-y:auto}
+.modal{background:var(--surface);border-radius:14px;width:100%;max-width:560px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:14px}
+.modal h3{margin:0;font-family:var(--f-display);font-stretch:90%;font-size:21px}
+.modal .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:480px){.modal .grid2{grid-template-columns:minmax(0,1fr)}}
+.modal .foot{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:4px}
+.quickdates{display:flex;gap:5px;flex-wrap:wrap}
+.quickdates button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--ink-2)}
+.quickdates button:hover{border-color:var(--ink-3);color:var(--ink)}
+.arearow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}
+.swatches{display:flex;gap:4px;flex-wrap:wrap}
+.swatches button{width:20px;height:20px;border-radius:50%;border:2px solid transparent;padding:0;background:var(--c)}
+.swatches button[aria-pressed="true"]{border-color:var(--ink)}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--c);display:inline-block}
+hr.sep{border:0;border-top:1px solid var(--line);margin:4px 0}
+@media (prefers-reduced-motion:no-preference){.task,.entry,.focus{transition:border-color .15s,opacity .2s}}
+</style>
+
+<div class="wrap" id="app">
+  <header class="top">
+    <div class="brand">
+      <div class="strip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="wordmark">Plantão<small>pendências e registro do que foi feito</small></div>
+    </div>
+    <span class="status local" id="status"><i></i><span>Carregando…</span></span>
+    <button class="iconbtn" id="btn-settings" aria-label="Ajustes"></button>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-tab="hoje" aria-selected="true"></button>
+    <button role="tab" data-tab="pend" aria-selected="false"></button>
+    <button role="tab" data-tab="feito" aria-selected="false"></button>
+    <button role="tab" data-tab="prog" aria-selected="false"></button>
+  </nav>
+
+  <div id="banner"></div>
+
+  <form class="capture" id="capture" autocomplete="off">
+    <input class="inp main" id="cap-title" placeholder="Nova pendência… (Enter adiciona)" aria-label="Nova pendência" maxlength="200">
+    <select class="inp" id="cap-area" aria-label="Área"></select>
+    <select class="inp" id="cap-due" aria-label="Prazo">
+      <option value="">Sem prazo</option>
+      <option value="0">Hoje</option>
+      <option value="1">Amanhã</option>
+      <option value="fri">Sexta</option>
+      <option value="sun">Domingo</option>
+      <option value="nextmon">Próx. segunda</option>
+      <option value="7">Em 1 semana</option>
+      <option value="pick">Escolher data…</option>
+    </select>
+    <button class="btn primary" type="submit" id="cap-add"></button>
+  </form>
+
+  <section id="v-hoje" role="tabpanel">
+    <div class="dayhead"><h1 id="h-date"></h1><div class="sumline" id="h-sum"></div></div>
+    <div class="today-grid">
+      <div class="stack" id="h-left"></div>
+      <div class="stack" id="h-right"></div>
+    </div>
+  </section>
+
+  <section id="v-pend" role="tabpanel" hidden>
+    <div class="row" style="margin-bottom:12px">
+      <div class="seg" id="pend-mode">
+        <button data-mode="lista" aria-pressed="true">Por prazo</button>
+        <button data-mode="matriz" aria-pressed="false">Matriz</button>
+        <button data-mode="feitas" aria-pressed="false">Concluídas</button>
+      </div>
+      <div class="spacer"></div>
+      <input class="inp" id="pend-search" placeholder="Buscar…" style="max-width:220px" aria-label="Buscar pendências">
+    </div>
+    <div class="filters" id="pend-filters" style="margin-bottom:16px"></div>
+    <div id="pend-body" class="stack"></div>
+  </section>
+
+  <section id="v-feito" role="tabpanel" hidden>
+    <div class="card" style="margin-bottom:20px">
+      <h2 class="sec">Registrar o que fiz</h2>
+      <form id="logform" class="logform" autocomplete="off"></form>
+    </div>
+    <div class="row" style="margin-bottom:12px">
+      <div class="weeknav">
+        <button class="iconbtn" id="wk-prev" aria-label="Semana anterior"></button>
+        <span class="lbl" id="wk-lbl"></span>
+        <button class="iconbtn" id="wk-next" aria-label="Próxima semana"></button>
+        <button class="btn ghost sm" id="wk-today">Esta semana</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="seg" id="feito-mode">
+        <button data-mode="lista" aria-pressed="true">Semana</button>
+        <button data-mode="grade" aria-pressed="false">Planilha</button>
+      </div>
+    </div>
+    <div id="feito-body" class="stack"></div>
+  </section>
+
+  <section id="v-prog" role="tabpanel" hidden>
+    <div class="row" style="margin-bottom:14px">
+      <div class="seg" id="prog-period">
+        <button data-p="4" aria-pressed="false">4 semanas</button>
+        <button data-p="12" aria-pressed="true">12 semanas</button>
+        <button data-p="26" aria-pressed="false">6 meses</button>
+        <button data-p="0" aria-pressed="false">Tudo</button>
+      </div>
+    </div>
+    <div id="prog-body" class="stack"></div>
+  </section>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- utilitários ---------- */
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const ICONS = {
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>', plus:'<path d="M12 5v14M5 12h14"/>',
+  gear:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  pin:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16v4z"/>', trash:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
+  left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>', skip:'<path d="M5 6l7 6-7 6M13 6l7 6-7 6"/>',
+  today:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15" r="1.6"/>',
+  list:'<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
+  done:'<path d="M4 6.5l2 2 3.5-3.5M4 14.5l2 2 3.5-3.5M13 7h7M13 15h7"/>',
+  chart:'<path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/>'
+};
+const ic = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+
+/* ---------- datas ---------- */
+const pad = n => String(n).padStart(2, "0");
+const isoOf = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayISO = () => isoOf(new Date());
+const toDate = iso => { const [y,m,d] = iso.split("-").map(Number); return new Date(y, m-1, d, 12); };
+const addDays = (iso, n) => { const d = toDate(iso); d.setDate(d.getDate()+n); return isoOf(d); };
+const diffDays = (a, b) => { const [ay,am,ad]=a.split("-").map(Number), [by,bm,bd]=b.split("-").map(Number); return Math.round((Date.UTC(by,bm-1,bd)-Date.UTC(ay,am-1,ad))/864e5); };
+const weekStart = iso => addDays(iso, -((toDate(iso).getDay()+6)%7));
+const isISO = s => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const WD = ["dom","seg","ter","qua","qui","sex","sáb"];
+const WDL = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+const MON = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const MONL = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const fmtDM = iso => { const d = toDate(iso); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}`; };
+const fmtWeek = ws => { const a = toDate(ws), b = toDate(addDays(ws,6));
+  return a.getMonth()===b.getMonth() ? `${a.getDate()}–${b.getDate()} ${MON[b.getMonth()]}` : `${a.getDate()} ${MON[a.getMonth()]} – ${b.getDate()} ${MON[b.getMonth()]}`; };
+const fmtMin = m => { m = Math.round(m||0); if (m < 60) return `${m} min`; const h = Math.floor(m/60), r = m%60; return r ? `${h} h ${pad(r)}` : `${h} h`; };
+const fmtHours = m => { const h = (m||0)/60; return h >= 10 ? Math.round(h)+" h" : (Math.round(h*10)/10).toString().replace(".", ",")+" h"; };
+const plural = (n, s, p) => `${n} ${n===1?s:p}`;
+function dueLabel(due, today){
+  const d = diffDays(today, due);
+  if (d < 0) return { txt: d===-1 ? "venceu ontem" : `atrasada ${-d} dias`, cls:"late" };
+  if (d === 0) return { txt:"hoje", cls:"today" };
+  if (d === 1) return { txt:"amanhã", cls:"" };
+  if (d < 7) return { txt:`${WD[toDate(due).getDay()]} ${fmtDM(due)}`, cls:"" };
+  return { txt: fmtDM(due), cls:"" };
+}
+function resolveQuickDue(v, today){
+  if (v === "" || v == null) return null;
+  if (v === "fri" || v === "sun") { const target = v==="fri" ? 5 : 0; let d = toDate(today); let add = (target - d.getDay() + 7) % 7; return addDays(today, add); }
+  if (v === "nextmon") { const ws = weekStart(today); return addDays(ws, 7); }
+  const n = Number(v); return Number.isFinite(n) ? addDays(today, n) : null;
+}
+
+/* ---------- armazenamento ---------- */
+const LS_KEY = "plantao.v1", UI_KEY = "plantao.ui";
+const Store = {
+  mode:"loading", docs:new Map(), overlay:new Map(), col:null, pending:0, chain:Promise.resolve(), error:null, ready:false, subs:new Set(),
+  on(fn){ this.subs.add(fn); }, emit(){ this.subs.forEach(f => { try{ f(); }catch(e){ console.error(e); } }); },
+  async init(){
+    let db = null, user = null, uid = null;
+    if (window.claude && typeof window.claude.use === "function") {
+      try { [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]); } catch(e) {}
+      if (user) { try { uid = await user.id(); } catch(e) {} }
+    }
+    if (db && uid) { this.mode = "cloud"; this.col = db.collection("data/users/" + uid); this.subscribe(true); }
+    else this.initLocal();
+  },
+  subscribe(canRetry){
+    try {
+      this.col.onSnapshot(snap => {
+        const m = new Map();
+        for (const d of snap.docs) if (d.exists) m.set(d.id, d.data());
+        for (const [id, o] of this.overlay) { if (o.val) m.set(id, o.val); else m.delete(id); }
+        this.docs = m; this.ready = true; this.error = null; this.emit();
+      }, err => {
+        const code = (err && err.code) || "unavailable";
+        if (code === "unavailable" && canRetry) { setTimeout(() => this.subscribe(false), 1500); return; }
+        this.error = code; this.ready = true; this.emit();
+      });
+    } catch(e) { this.error = "unavailable"; this.ready = true; this.emit(); }
+  },
+  initLocal(){
+    let raw = null, ok = true;
+    try { raw = localStorage.getItem(LS_KEY); } catch(e) { ok = false; }
+    this.mode = ok ? "local" : "memory";
+    if (raw) { try { const o = JSON.parse(raw); if (o && typeof o === "object") for (const k of Object.keys(o)) this.docs.set(k, o[k]); } catch(e) {} }
+    this.ready = true; this.emit();
+  },
+  saveLocal(){
+    if (this.mode !== "local") return;
+    clearTimeout(this._t);
+    this._t = setTimeout(() => { try { localStorage.setItem(LS_KEY, JSON.stringify(Object.fromEntries(this.docs))); } catch(e) { this.error = "local_full"; this.emit(); } }, 150);
+  },
+  write(id, data){
+    const val = data ? JSON.parse(JSON.stringify(data)) : null;
+    if (val) this.docs.set(id, val); else this.docs.delete(id);
+    if (this.mode === "cloud") {
+      const tok = {}; this.overlay.set(id, { val, tok }); this.pending++;
+      this.chain = this.chain
+        .then(() => this.send(id, val))
+        .then(() => {}, e => { this.error = (e && e.code) || "unavailable"; toast(saveErrorText(this.error)); })
+        .then(() => { this.pending--; const o = this.overlay.get(id); if (o && o.tok === tok) this.overlay.delete(id); this.emit(); });
+    } else this.saveLocal();
+    this.emit();
+  },
+  async send(id, val){
+    const ref = this.col.doc(id);
+    const go = () => val ? ref.set(val) : ref.delete();
+    try { await go(); }
+    catch(e) { if (e && e.code === "unavailable") { await new Promise(r => setTimeout(r, 400 + Math.random()*800)); await go(); } else throw e; }
+  }
+};
+function saveErrorText(code){
+  if (code === "quota_exceeded") return "Espaço cheio: apague registros antigos ou exporte um backup.";
+  if (code === "revoked") return "O acesso de gravação foi encerrado. Recarregue a página.";
+  if (code === "invalid_argument") return "Não consegui salvar esta alteração (sem permissão de escrita).";
+  return "Não consegui salvar agora. Tente de novo em instantes.";
+}
+
+/* ---------- modelo ---------- */
+const DEFAULT_AREAS = [
+  { id:"fac",   name:"Faculdade",          color:"#3f73c4" },
+  { id:"liga",  name:"Liga acadêmica",     color:"#c4473b" },
+  { id:"pesq",  name:"Grupo de pesquisa",  color:"#8455c2" },
+  { id:"pibic", name:"PIBIC",              color:"#2c9a6c" },
+  { id:"ext",   name:"Externa",            color:"#c58a1c" },
+  { id:"fam",   name:"Família e pessoal",  color:"#c75a8a" }
+];
+const SWATCHES = ["#3f73c4","#c4473b","#8455c2","#2c9a6c","#c58a1c","#c75a8a","#1f9bb0","#6c7a2a","#d0662a","#64748b"];
+const TYPES = [
+  { id:"questoes", n:"Questões" }, { id:"aula", n:"Aula" }, { id:"leitura", n:"Leitura" }, { id:"revisao", n:"Revisão" },
+  { id:"resumo", n:"Resumo" }, { id:"flashcards", n:"Flashcards" }, { id:"escrita", n:"Escrita" }, { id:"outro", n:"Outro" }
+];
+const typeName = id => id === "tarefa" ? "Tarefa" : ((TYPES.find(t => t.id===id)||{}).n || "Outro");
+const IMP = { 1:"Baixa", 2:"Normal", 3:"Alta" };
+const TRI = [
+  { k:"red", n:"Vermelho", d:"Emergente" }, { k:"orange", n:"Laranja", d:"Muito urgente" }, { k:"yellow", n:"Amarelo", d:"Urgente" },
+  { k:"green", n:"Verde", d:"Pouco urgente" }, { k:"blue", n:"Azul", d:"Não urgente" }
+];
+
+function getMeta(){
+  const m = Store.docs.get("meta");
+  const areas = m && Array.isArray(m.areas) && m.areas.length ? m.areas : DEFAULT_AREAS;
+  const settings = Object.assign({ logOnComplete:true }, (m && m.settings) || {});
+  return { areas, settings };
+}
+function saveMeta(patch){ const cur = getMeta(); Store.write("meta", Object.assign({ kind:"meta", areas:cur.areas, settings:cur.settings }, patch)); }
+function areaOf(id){ return getMeta().areas.find(a => a.id === id) || { id, name:"Sem área", color:"#8a9593" }; }
+function allTasks(){ const out = []; for (const [id, d] of Store.docs) if (id.startsWith("t_") && d && d.kind === "task") out.push(Object.assign({}, d, { id })); return out; }
+function allEntries(){ const out = []; for (const [id, d] of Store.docs) if (id.startsWith("w_") && d && Array.isArray(d.entries)) for (const e of d.entries) if (e && isISO(e.date)) out.push(Object.assign({}, e)); return out; }
+
+function putTask(t){ const body = Object.assign({}, t); delete body.id; body.kind = "task"; Store.write(t.id, body); }
+function deleteTask(t){ Store.write(t.id, null); removeEntries(e => e.taskId === t.id); }
+function putEntry(e){
+  const target = "w_" + weekStart(e.date);
+  for (const [id, d] of [...Store.docs]) {
+    if (id.startsWith("w_") && id !== target && d && Array.isArray(d.entries) && d.entries.some(x => x.id === e.id)) {
+      const list = d.entries.filter(x => x.id !== e.id);
+      Store.write(id, list.length ? { kind:"week", week:d.week, entries:list } : null);
+    }
+  }
+  const cur = Store.docs.get(target);
+  const list = cur && Array.isArray(cur.entries) ? cur.entries.map(x => Object.assign({}, x)) : [];
+  const i = list.findIndex(x => x.id === e.id);
+  if (i >= 0) list[i] = e; else list.push(e);
+  Store.write(target, { kind:"week", week:weekStart(e.date), entries:list });
+}
+function removeEntries(pred){
+  for (const [id, d] of [...Store.docs]) {
+    if (id.startsWith("w_") && d && Array.isArray(d.entries) && d.entries.some(pred)) {
+      const list = d.entries.filter(x => !pred(x));
+      Store.write(id, list.length ? { kind:"week", week:d.week, entries:list } : null);
+    }
+  }
+}
+function setDone(t, done){
+  const today = todayISO();
+  putTask(Object.assign({}, t, { done, doneAt: done ? today : null }));
+  if (done && getMeta().settings.logOnComplete && !t.taskEntryOff) {
+    const a = areaOf(t.area);
+    const e = { id:"e_"+newId(), date:today, type:"tarefa", area:t.area, subject:a.name, topic:t.title, taskId:t.id };
+    if (t.ex) e.ex = true;
+    putEntry(e);
+  }
+  if (!done) removeEntries(e => e.taskId === t.id);
+}
+
+/* prioridade no estilo triagem */
+function triage(t, today){
+  const why = []; let urg; const imp = t.imp || 2; let d = null;
+  if (t.due) {
+    d = diffDays(today, t.due);
+    if (d < 0) { urg = 9 + Math.min(-d, 3); why.push(d===-1 ? "venceu ontem" : `atrasada há ${-d} dias`); }
+    else if (d === 0) { urg = 8; why.push("vence hoje"); }
+    else if (d === 1) { urg = 6; why.push("vence amanhã"); }
+    else if (d <= 3) { urg = 4.5; why.push(`vence em ${d} dias`); }
+    else if (d <= 7) { urg = 3; why.push(`vence em ${d} dias`); }
+    else if (d <= 14) { urg = 1.5; why.push(`vence ${fmtDM(t.due)}`); }
+    else { urg = 0.5; why.push(`vence ${fmtDM(t.due)}`); }
+  } else { urg = 0.8; why.push("sem prazo"); }
+  let s = urg + imp * 1.5;
+  if (imp === 3) why.push("importância alta");
+  const est = t.est || 0;
+  if (d != null && d >= 0) {
+    if (est >= 180 && d <= 7) { s += 2; why.push("tarefa longa, comece cedo"); }
+    else if (est >= 90 && d <= 3) { s += 1.5; why.push("exige tempo"); }
+  }
+  const level = s >= 14 ? 0 : s >= 11 ? 1 : s >= 8 ? 2 : s >= 5 ? 3 : 4;
+  return { score:s, level, why };
+}
+function sortScored(list, today){
+  return list.map(t => ({ t, tr:triage(t, today) })).sort((a,b) =>
+    (b.tr.score - a.tr.score) || ((a.t.due||"9999") < (b.t.due||"9999") ? -1 : (a.t.due||"9999") > (b.t.due||"9999") ? 1 : 0) || String(a.t.created||"").localeCompare(String(b.t.created||"")));
+}
+const accuracy = list => { let q = 0, ok = 0; for (const e of list) if (e.q > 0 && e.ok != null) { q += e.q; ok += e.ok; } return q ? Math.round(ok/q*100) : null; };
+
+/* ---------- estado da interface ---------- */
+const ui = { tab:"hoje", pendMode:"lista", area:"all", search:"", feitoWeek:null, feitoMode:"lista", gridTasks:false, period:12, metric:"q", skip:0, logType:"questoes", lastSubject:"", capArea:"fac", showDone:60 };
+try { const s = JSON.parse(localStorage.getItem(UI_KEY) || "{}"); for (const k of ["tab","pendMode","feitoMode","period","metric","logType","lastSubject","capArea","gridTasks"]) if (k in s) ui[k] = s[k]; } catch(e) {}
+function saveUI(){ try { localStorage.setItem(UI_KEY, JSON.stringify({ tab:ui.tab, pendMode:ui.pendMode, feitoMode:ui.feitoMode, period:ui.period, metric:ui.metric, logType:ui.logType, lastSubject:ui.lastSubject, capArea:ui.capArea, gridTasks:ui.gridTasks })); } catch(e) {} }
+ui.feitoWeek = weekStart(todayISO());
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function toast(msg, undo){
+  const root = $("#toast-root");
+  root.innerHTML = `<div class="toast" role="status"><span>${esc(msg)}</span>${undo ? '<button type="button" id="toast-undo">Desfazer</button>' : ""}</div>`;
+  if (undo) $("#toast-undo").onclick = () => { root.innerHTML = ""; undo(); };
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { root.innerHTML = ""; }, undo ? 6000 : 3200);
+}
+
+/* ---------- modal ---------- */
+let modalOnClose = null;
+function openModal(html, onMount, onClose){
+  if (modalOnClose) { const f = modalOnClose; modalOnClose = null; f(); }
+  modalOnClose = onClose || null;
+  const root = $("#modal-root");
+  root.innerHTML = `<div class="overlay" id="ov"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  const ov = $("#ov");
+  ov.addEventListener("mousedown", e => { if (e.target === ov) closeModal(); });
+  if (onMount) onMount(ov.querySelector(".modal"));
+  const f = ov.querySelector("[autofocus]") || ov.querySelector("input,select,textarea,button");
+  if (f) setTimeout(() => f.focus(), 30);
+}
+function closeModal(){ $("#modal-root").innerHTML = ""; if (modalOnClose) { const f = modalOnClose; modalOnClose = null; f(); } }
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("#modal-root").innerHTML) { closeModal(); return; }
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (e.key === "n" && !e.metaKey && !e.ctrlKey && !e.altKey && !["input","textarea","select"].includes(tag) && !$("#modal-root").innerHTML) {
+    if (ui.tab === "hoje" || ui.tab === "pend") { e.preventDefault(); $("#cap-title").focus(); }
+  }
+});
+
+/* ---------- editor de tarefa ---------- */
+function areaOptions(sel){ return getMeta().areas.map(a => `<option value="${esc(a.id)}"${a.id===sel?" selected":""}>${esc(a.name)}</option>`).join(""); }
+function openTaskEditor(task){
+  const today = todayISO(); const isNew = !task || !task.id;
+  const t = Object.assign({ title:"", area: ui.capArea || "fac", due:null, imp:2, est:null, notes:"", done:false, focus:null }, task || {});
+  const estOpts = [["","—"],[15,"15 min"],[30,"30 min"],[60,"1 h"],[120,"2 h"],[180,"3 h"],[300,"5 h ou mais"]];
+  openModal(`
+    <h3>${isNew ? "Nova pendência" : "Editar pendência"}</h3>
+    <label class="f">O que precisa ser feito<input class="inp" id="te-title" maxlength="200" value="${esc(t.title)}" autofocus></label>
+    <div class="grid2">
+      <label class="f">Área<select class="inp" id="te-area">${areaOptions(t.area)}</select></label>
+      <label class="f">Prazo<input class="inp" type="date" id="te-due" value="${esc(t.due||"")}"></label>
+    </div>
+    <div class="quickdates" id="te-qd">
+      <button type="button" data-q="0">Hoje</button><button type="button" data-q="1">Amanhã</button><button type="button" data-q="fri">Sexta</button>
+      <button type="button" data-q="sun">Domingo</button><button type="button" data-q="nextmon">Próx. segunda</button><button type="button" data-q="7">+1 semana</button><button type="button" data-q="">Sem prazo</button>
+    </div>
+    <div class="grid2">
+      <div class="f" style="display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:500;color:var(--ink-2)">Importância
+        <div class="seg" id="te-imp">${[1,2,3].map(i => `<button type="button" data-v="${i}" aria-pressed="${t.imp===i}">${IMP[i]}</button>`).join("")}</div></div>
+      <label class="f">Tempo estimado<select class="inp" id="te-est">${estOpts.map(([v,n]) => `<option value="${v}"${String(t.est||"")===String(v)?" selected":""}>${n}</option>`).join("")}</select></label>
+    </div>
+    <label class="f">Notas<textarea class="inp" id="te-notes" maxlength="2000" placeholder="Link, contexto, próximos passos…">${esc(t.notes||"")}</textarea></label>
+    <label class="row small" style="gap:8px"><input type="checkbox" id="te-focus"${t.focus===today?" checked":""}> Incluir no plano de hoje</label>
+    <div class="err" id="te-err" hidden></div>
+    <div class="foot">
+      ${isNew ? "" : `<button type="button" class="btn ghost danger" id="te-del">${ic("trash")} Excluir</button>`}
+      <div class="spacer"></div>
+      <button type="button" class="btn" id="te-cancel">Cancelar</button>
+      <button type="button" class="btn primary" id="te-save">${isNew ? "Adicionar" : "Salvar"}</button>
+    </div>`, m => {
+      let imp = t.imp || 2;
+      m.querySelector("#te-imp").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; imp = Number(b.dataset.v); m.querySelectorAll("#te-imp button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); });
+      m.querySelector("#te-qd").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const v = resolveQuickDue(b.dataset.q, todayISO()); m.querySelector("#te-due").value = v || ""; });
+      m.querySelector("#te-cancel").onclick = closeModal;
+      const save = () => {
+        const title = m.querySelector("#te-title").value.trim();
+        if (!title) { const er = m.querySelector("#te-err"); er.textContent = "Escreva o que precisa ser feito."; er.hidden = false; m.querySelector("#te-title").focus(); return; }
+        const due = m.querySelector("#te-due").value;
+        const est = m.querySelector("#te-est").value;
+        const out = Object.assign({}, t, {
+          id: t.id || "t_" + newId(), title, area: m.querySelector("#te-area").value, due: isISO(due) ? due : null, imp,
+          est: est ? Number(est) : null, notes: m.querySelector("#te-notes").value.trim(),
+          focus: m.querySelector("#te-focus").checked ? todayISO() : (t.focus === todayISO() ? null : t.focus || null),
+          created: t.created || new Date().toISOString()
+        });
+        putTask(out); closeModal(); toast(isNew ? "Pendência adicionada" : "Alterações salvas");
+      };
+      m.querySelector("#te-save").onclick = save;
+      m.querySelector("#te-title").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); save(); } });
+      const del = m.querySelector("#te-del");
+      if (del) del.onclick = () => { const snap = Object.assign({}, t); const entries = allEntries().filter(e => e.taskId === t.id); deleteTask(t); closeModal(); toast("Pendência excluída", () => { putTask(snap); entries.forEach(putEntry); }); };
+    });
+}
+
+/* ---------- ações de tarefas (delegação) ---------- */
+function findTask(id){ const d = Store.docs.get(id); return d && d.kind === "task" ? Object.assign({}, d, { id }) : null; }
+function handleTaskAction(act, id){
+  const t = findTask(id); if (!t) return;
+  const today = todayISO();
+  if (act === "done") {
+    if (t.done) { setDone(t, false); toast("Pendência reaberta"); }
+    else { setDone(t, true); ui.skip = 0; toast("Concluída" + (getMeta().settings.logOnComplete ? " e registrada em Feito" : ""), () => { const cur = findTask(id); if (cur) setDone(cur, false); }); }
+  } else if (act === "pin") {
+    putTask(Object.assign({}, t, { focus: t.focus === today ? null : today }));
+  } else if (act === "edit") openTaskEditor(t);
+  else if (act === "tomorrow") { const prev = t.due || null; putTask(Object.assign({}, t, { due: addDays(today, 1), focus: t.focus === today ? null : t.focus })); toast("Prazo movido para amanhã", () => { const cur = findTask(id); if (cur) putTask(Object.assign({}, cur, { due: prev })); }); }
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-task-act]");
+  if (b) { e.preventDefault(); handleTaskAction(b.dataset.taskAct, b.dataset.id); return; }
+  const m = e.target.closest("[data-open-task]");
+  if (m) { const t = findTask(m.dataset.openTask); if (t) openTaskEditor(t); return; }
+  const en = e.target.closest("[data-open-entry]");
+  if (en) { const x = allEntries().find(z => z.id === en.dataset.openEntry); if (x) openEntryEditor(x); return; }
+  const go = e.target.closest("[data-goto]");
+  if (go) { setTab(go.dataset.goto); if (go.dataset.focus) setTimeout(() => { const el = $(go.dataset.focus); if (el) el.focus(); }, 30); }
+});
+
+function taskRow(t, today, opts){
+  opts = opts || {};
+  const tr = triage(t, today); const a = areaOf(t.area);
+  const meta = [];
+  meta.push(`<span class="chip" style="--c:${esc(a.color)}">${esc(a.name)}</span>`);
+  if (t.done) meta.push(`<span>concluída ${t.doneAt ? fmtDM(t.doneAt) : ""}</span>`);
+  else if (t.due) { const dl = dueLabel(t.due, today); meta.push(`<span class="due ${dl.cls}">${esc(dl.txt)}</span>`); }
+  if (t.imp === 3) meta.push(`<span>alta</span>`); else if (t.imp === 1) meta.push(`<span>baixa</span>`);
+  if (t.est) meta.push(`<span class="mono">~${fmtMin(t.est)}</span>`);
+  if (t.notes) meta.push(`<span title="Tem notas">notas</span>`);
+  const pinned = t.focus === today;
+  return `<div class="task ${t.done ? "done" : "l"+tr.level}">
+    <button class="chk" data-task-act="done" data-id="${esc(t.id)}" aria-label="${t.done ? "Reabrir" : "Concluir"}: ${esc(t.title)}">${ic("check")}</button>
+    <div class="tmain" data-open-task="${esc(t.id)}"><div class="ttitle">${esc(t.title)}</div><div class="tmeta">${meta.join("")}</div></div>
+    <div class="tact">${t.done ? "" : `<button data-task-act="pin" data-id="${esc(t.id)}" class="${pinned?"on":""}" aria-label="${pinned?"Tirar do plano de hoje":"Pôr no plano de hoje"}" title="${pinned?"Tirar do plano de hoje":"Pôr no plano de hoje"}">${ic("pin")}</button>`}
+      <button data-task-act="edit" data-id="${esc(t.id)}" aria-label="Editar" title="Editar">${ic("edit")}</button></div>
+  </div>`;
+}
+
+/* ---------- abas ---------- */
+const TABS = [["hoje","Hoje","today"],["pend","Pendências","list"],["feito","Feito","done"],["prog","Progresso","chart"]];
+function setTab(tab){
+  ui.tab = tab; saveUI();
+  for (const [id] of TABS) { $("#v-"+id).hidden = id !== tab; }
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+  $("#capture").hidden = !(tab === "hoje" || tab === "pend");
+  render();
+  window.scrollTo(0, 0);
+}
+$("#tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
+
+/* ---------- captura rápida ---------- */
+let pickedDate = null;
+function fillCaptureAreas(){
+  const sel = $("#cap-area"); const areas = getMeta().areas;
+  if (!areas.some(a => a.id === ui.capArea)) ui.capArea = areas[0] ? areas[0].id : "";
+  const html = areas.map(a => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join("");
+  if (sel.dataset.sig !== html) { sel.innerHTML = html; sel.dataset.sig = html; }
+  sel.value = ui.capArea;
+}
+$("#cap-area").addEventListener("change", e => { ui.capArea = e.target.value; saveUI(); });
+$("#cap-due").addEventListener("change", e => {
+  if (e.target.value === "pick") {
+    openModal(`<h3>Escolher prazo</h3><label class="f">Data<input class="inp" type="date" id="pk-date" value="${pickedDate || addDays(todayISO(), 2)}" autofocus></label>
+      <div class="foot"><div class="spacer"></div><button class="btn" id="pk-c">Cancelar</button><button class="btn primary" id="pk-ok">Usar esta data</button></div>`, m => {
+      m.querySelector("#pk-c").onclick = closeModal;
+      m.querySelector("#pk-ok").onclick = () => {
+        const v = m.querySelector("#pk-date").value;
+        if (isISO(v)) { pickedDate = v; const sel = $("#cap-due"); let opt = sel.querySelector('option[data-picked]');
+          if (!opt) { opt = document.createElement("option"); opt.dataset.picked = "1"; sel.insertBefore(opt, sel.querySelector('option[value="pick"]')); }
+          opt.value = "d:" + v; opt.textContent = `${WD[toDate(v).getDay()]} ${fmtDM(v)}`; sel.value = opt.value; }
+        else $("#cap-due").value = "";
+        closeModal(); $("#cap-title").focus();
+      };
+    }, () => { const sel = $("#cap-due"); if (sel.value === "pick") { const opt = sel.querySelector("option[data-picked]"); sel.value = opt ? opt.value : ""; } });
+  }
+});
+$("#capture").addEventListener("submit", e => {
+  e.preventDefault();
+  const title = $("#cap-title").value.trim();
+  if (!title) { $("#cap-title").focus(); return; }
+  const dv = $("#cap-due").value; const today = todayISO();
+  const due = dv.startsWith("d:") ? dv.slice(2) : (dv === "pick" ? null : resolveQuickDue(dv, today));
+  const t = { id:"t_"+newId(), title, area:$("#cap-area").value, due, imp:2, est:null, notes:"", done:false, focus:null, created:new Date().toISOString() };
+  putTask(t);
+  $("#cap-title").value = ""; $("#cap-due").value = "";
+  toast(`Adicionada${due ? " · prazo " + dueLabel(due, today).txt : ""}`, () => Store.write(t.id, null));
+});
+
+/* ---------- HOJE ---------- */
+function renderHoje(){
+  const today = todayISO(); const d = toDate(today);
+  $("#h-date").textContent = `${WDL[d.getDay()][0].toUpperCase()+WDL[d.getDay()].slice(1)}, ${d.getDate()} de ${MONL[d.getMonth()]}`;
+  const tasks = allTasks(); const open = tasks.filter(t => !t.done);
+  const late = open.filter(t => t.due && t.due < today).length;
+  const dueToday = open.filter(t => t.due === today).length;
+  const eow = addDays(weekStart(today), 6);
+  const week = open.filter(t => t.due && t.due > today && t.due <= eow).length;
+  const sum = [];
+  if (late) sum.push(`<span class="pill bad">${plural(late,"atrasada","atrasadas")}</span>`);
+  if (dueToday) sum.push(`<span class="pill warn">${dueToday} para hoje</span>`);
+  if (week) sum.push(`<span class="pill">${week} até domingo</span>`);
+  sum.push(`<span class="pill">${plural(open.length,"pendência aberta","pendências abertas")}</span>`);
+  $("#h-sum").innerHTML = Store.ready ? sum.join("") : "";
+
+  const L = [], R = [];
+  if (!Store.ready) { $("#h-left").innerHTML = `<div class="empty">Carregando seus dados…</div>`; $("#h-right").innerHTML = ""; return; }
+  const entries = allEntries();
+  if (!tasks.length && !entries.length) {
+    L.push(`<div class="card welcome"><h3>Esvazie a cabeça primeiro</h3>
+      <p class="muted" style="margin:0">Tudo que está solto nas notas vira uma pendência com área e prazo. O Plantão calcula a prioridade e sugere por onde começar.</p>
+      <ol><li>Digite cada demanda no campo acima e escolha a área e o prazo.</li>
+      <li>Volte aqui: a pendência mais urgente aparece em destaque, colorida como na triagem de Manchester.</li>
+      <li>Em <b>Feito</b>, registre o que estudou (assunto, questões, acertos). Em <b>Progresso</b>, veja a evolução.</li></ol>
+      <div class="row"><button class="btn primary" type="button" data-goto="hoje" data-focus="#cap-title">${ic("plus")} Adicionar a primeira</button>
+      <button class="btn" type="button" id="load-ex">Ver com exemplos</button></div></div>`);
+  }
+  const scored = sortScored(open, today).map(x => { if (x.t.focus === today) x.tr = Object.assign({}, x.tr, { score: x.tr.score + 1.5 }); return x; }).sort((a,b) => b.tr.score - a.tr.score);
+  if (scored.length) {
+    const i = ui.skip % scored.length; const { t, tr } = scored[i]; const a = areaOf(t.area);
+    L.push(`<div class="focus l${tr.level}">
+      <div class="eyebrow"><span class="tri">● ${TRI[tr.level].n}</span><span>${i === 0 ? "Comece por aqui" : `Sugestão ${i+1} de ${scored.length}`}</span></div>
+      <h3>${esc(t.title)}</h3>
+      <div class="why"><span class="chip" style="--c:${esc(a.color)}">${esc(a.name)}</span>${tr.why.map(w => `<span>${esc(w)}</span>`).join("")}${t.est ? `<span>~${fmtMin(t.est)}</span>` : ""}</div>
+      <div class="acts">
+        <button class="btn primary" data-task-act="done" data-id="${esc(t.id)}">${ic("check")} Concluir</button>
+        ${t.focus === today ? "" : `<button class="btn" data-task-act="pin" data-id="${esc(t.id)}">${ic("pin")} Pôr no plano de hoje</button>`}
+        ${scored.length > 1 ? `<button class="btn ghost" id="skip">${ic("skip")} Outra sugestão</button>` : ""}
+        <button class="btn ghost" data-task-act="edit" data-id="${esc(t.id)}">${ic("edit")} Editar</button>
+      </div></div>`);
+  }
+  const plan = tasks.filter(t => t.focus === today && (!t.done || t.doneAt === today));
+  const planOpen = plan.filter(t => !t.done).length;
+  if (tasks.length) {
+    L.push(`<div><h2 class="sec">Plano de hoje <span class="count">${plan.length - planOpen}/${plan.length}</span></h2>
+      ${plan.length ? `<div class="tlist">${sortScored(plan, today).sort((a,b) => (a.t.done?1:0)-(b.t.done?1:0)).map(x => taskRow(x.t, today)).join("")}</div>`
+      : `<div class="empty">Escolha até três pendências para hoje tocando no ícone de sol de cada uma. Três prioridades cabem num dia; dez não.</div>`}
+      ${planOpen > 3 ? `<p class="small muted" style="margin:8px 0 0">Plano com ${planOpen} itens abertos. Se tudo é prioridade, nada é: considere manter só três.</p>` : ""}</div>`);
+  }
+  const triList = scored.filter(x => x.t.focus !== today).slice(0, 8);
+  if (triList.length) {
+    L.push(`<div><h2 class="sec">Fila por prioridade <span class="count">${scored.length}</span></h2>
+      <div class="tlist">${triList.map(x => taskRow(x.t, today)).join("")}</div>
+      ${scored.length > triList.length + plan.filter(t=>!t.done).length ? `<button class="btn ghost sm" style="margin-top:8px" data-goto="pend">Ver todas as pendências ${ic("right")}</button>` : ""}</div>`);
+  }
+
+  // coluna direita
+  const ws = weekStart(today); const wEntries = entries.filter(e => e.date >= ws && e.date <= addDays(ws,6));
+  const study = wEntries.filter(e => e.type !== "tarefa");
+  const q = study.reduce((s,e) => s + (e.q||0), 0); const acc = accuracy(study);
+  const mins = study.reduce((s,e) => s + (e.min||0), 0);
+  const doneW = tasks.filter(t => t.done && t.doneAt >= ws && t.doneAt <= addDays(ws,6)).length;
+  R.push(`<div class="card"><h2 class="sec">Esta semana <span class="count">${fmtWeek(ws)}</span></h2>
+    <div class="kv"><div><b>${q}</b><span>questões</span></div><div><b>${acc == null ? "—" : acc+"%"}</b><span>acerto</span></div>
+    <div><b>${fmtHours(mins)}</b><span>de estudo registrado</span></div><div><b>${doneW}</b><span>${doneW===1?"pendência concluída":"pendências concluídas"}</span></div></div></div>`);
+  const todays = entries.filter(e => e.date === today);
+  R.push(`<div class="card"><h2 class="sec">Feito hoje <span class="count">${todays.length}</span></h2>
+    ${todays.length ? `<div class="tlist">${todays.map(e => `<div class="small" data-open-entry="${esc(e.id)}" style="cursor:pointer"><span class="tag ${e.type==="tarefa"?"tarefa":""}">${esc(typeName(e.type))}</span> <b>${esc(e.subject)}</b>${e.topic ? " · " + esc(e.topic) : ""} ${entryNums(e) ? `<span class="mono muted">${esc(entryNums(e))}</span>` : ""}</div>`).join("")}</div>`
+    : `<p class="small muted" style="margin:0 0 10px">Nada registrado ainda hoje.</p>`}
+    <button class="btn sm" style="margin-top:10px" data-goto="feito" data-focus="#lf-subject">${ic("plus")} Registrar estudo</button></div>`);
+  R.push(`<div class="card"><details><summary>Como a prioridade é calculada</summary>
+    <p class="small muted">Cada pendência recebe uma cor como na triagem de Manchester. O cálculo soma a proximidade do prazo (atrasada pesa mais), a importância e, para tarefas longas, um bônus para começar antes.</p>
+    <div class="legend">${TRI.map((x,i) => `<div><i style="background:var(--t-${x.k})"></i><b>${x.n}</b> <span class="muted">${x.d}</span></div>`).join("")}</div>
+    <p class="small muted" style="margin-bottom:0">Atalho: tecle <span class="mono">n</span> para capturar uma nova pendência.</p></details></div>`);
+
+  $("#h-left").innerHTML = L.join(""); $("#h-right").innerHTML = R.join("");
+  const sk = $("#skip"); if (sk) sk.onclick = () => { ui.skip++; renderHoje(); };
+  const lx = $("#load-ex"); if (lx) lx.onclick = loadExamples;
+}
+
+/* ---------- PENDÊNCIAS ---------- */
+$("#pend-mode").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; ui.pendMode = b.dataset.mode; saveUI(); render(); });
+$("#pend-search").addEventListener("input", e => { ui.search = e.target.value; renderPend(); });
+$("#pend-filters").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; ui.area = b.dataset.area; renderPend(); });
+function renderPend(){
+  const today = todayISO();
+  document.querySelectorAll("#pend-mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === ui.pendMode)));
+  const tasks = allTasks(); const showDone = ui.pendMode === "feitas";
+  const base = tasks.filter(t => showDone ? t.done : !t.done);
+  const areas = getMeta().areas;
+  const counts = {}; base.forEach(t => { counts[t.area] = (counts[t.area]||0) + 1; });
+  const orphan = base.filter(t => !areas.some(a => a.id === t.area)).length;
+  if (ui.area !== "all" && ui.area !== "_none" && !areas.some(a => a.id === ui.area)) ui.area = "all";
+  $("#pend-filters").innerHTML = `<button data-area="all" aria-pressed="${ui.area==="all"}">Todas <span class="n">${base.length}</span></button>` +
+    areas.map(a => `<button data-area="${esc(a.id)}" aria-pressed="${ui.area===a.id}" style="--c:${esc(a.color)}"><span class="d"></span>${esc(a.name)} <span class="n">${counts[a.id]||0}</span></button>`).join("") +
+    (orphan ? `<button data-area="_none" aria-pressed="${ui.area==="_none"}"><span class="d"></span>Sem área <span class="n">${orphan}</span></button>` : "");
+  const q = ui.search.trim().toLowerCase();
+  let list = base.filter(t => (ui.area === "all" || (ui.area === "_none" ? !areas.some(a => a.id === t.area) : t.area === ui.area)) && (!q || (t.title + " " + (t.notes||"")).toLowerCase().includes(q)));
+  const body = $("#pend-body");
+  if (!Store.ready) { body.innerHTML = `<div class="empty">Carregando…</div>`; return; }
+  if (showDone) {
+    list.sort((a,b) => String(b.doneAt||"").localeCompare(String(a.doneAt||"")));
+    if (!list.length) { body.innerHTML = `<div class="empty">Nenhuma pendência concluída${q || ui.area!=="all" ? " com esse filtro" : " ainda"}.</div>`; return; }
+    const shown = list.slice(0, ui.showDone); const groups = new Map();
+    shown.forEach(t => { const k = t.doneAt || "—"; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(t); });
+    body.innerHTML = [...groups].map(([k, ts]) => `<div><h2 class="sec">${k === "—" ? "Sem data" : `${WDL[toDate(k).getDay()]} ${fmtDM(k)}`} <span class="count">${ts.length}</span></h2><div class="tlist">${ts.map(t => taskRow(t, today)).join("")}</div></div>`).join("") +
+      (list.length > shown.length ? `<button class="btn" id="more-done">Mostrar mais (${list.length - shown.length})</button>` : "");
+    const md = $("#more-done"); if (md) md.onclick = () => { ui.showDone += 100; renderPend(); };
+    return;
+  }
+  if (!list.length) { body.innerHTML = `<div class="empty">${q || ui.area!=="all" ? "Nada encontrado com esse filtro." : "Nenhuma pendência aberta. Use o campo acima para capturar a próxima demanda."}</div>`; return; }
+  if (ui.pendMode === "matriz") {
+    const urgent = t => t.due && diffDays(today, t.due) <= 2;
+    const important = t => (t.imp || 2) >= 2;
+    const Q = [
+      ["Fazer agora", "Importante e com prazo em até 2 dias.", t => urgent(t) && important(t)],
+      ["Planejar", "Importante, mas com folga. Reserve um horário antes que vire urgente.", t => !urgent(t) && important(t)],
+      ["Resolver rápido", "Prazo curto e importância baixa. Faça logo ou simplifique.", t => urgent(t) && !important(t)],
+      ["Quando der", "Sem urgência e importância baixa.", t => !urgent(t) && !important(t)]
+    ];
+    body.innerHTML = `<div class="matrix">${Q.map(([h, p, f]) => { const ts = sortScored(list.filter(f), today);
+      return `<div class="quad"><h4>${h} <span class="mono muted small">${ts.length}</span></h4><p>${p}</p><div class="tlist">${ts.length ? ts.map(x => taskRow(x.t, today)).join("") : `<div class="small muted">Vazio.</div>`}</div></div>`; }).join("")}</div>`;
+    return;
+  }
+  const e1 = addDays(today, 1), eow = addDays(weekStart(today), 6), after = e1 > eow ? e1 : eow;
+  const B = [
+    ["Atrasadas", t => t.due && t.due < today], ["Hoje", t => t.due === today], ["Amanhã", t => t.due === e1],
+    ["Até domingo", t => t.due && t.due > e1 && t.due <= eow], ["Próximas", t => t.due && t.due > after], ["Sem prazo", t => !t.due]
+  ];
+  body.innerHTML = B.map(([h, f]) => { const ts = sortScored(list.filter(f), today); if (!ts.length) return "";
+    return `<div><h2 class="sec">${h} <span class="count">${ts.length}</span></h2><div class="tlist">${ts.map(x => taskRow(x.t, today)).join("")}</div></div>`; }).join("");
+}
+
+/* ---------- FEITO ---------- */
+function entryNums(e){ const p = []; if (e.q) p.push(e.ok != null ? `${e.ok}/${e.q}` : `${e.q} q`); if (e.min) p.push(fmtMin(e.min)); return p.join(" · "); }
+function subjectsList(){ const m = new Map(); for (const e of allEntries()) if (e.type !== "tarefa" && e.subject) { const k = e.subject.trim(); if (k && (!m.has(k) || m.get(k) < e.date)) m.set(k, e.date); } return [...m].sort((a,b) => b[1].localeCompare(a[1])).map(x => x[0]); }
+function entryFormHTML(e, prefix){
+  return `
+    <label class="f c2">Data<input class="inp" type="date" id="${prefix}-date" value="${esc(e.date)}" required></label>
+    <label class="f c2">Matéria / frente<input class="inp" id="${prefix}-subject" list="${prefix}-subjects" maxlength="80" value="${esc(e.subject||"")}" placeholder="Ex.: Cardiologia, Neuroanatomia"><datalist id="${prefix}-subjects">${subjectsList().map(s => `<option value="${esc(s)}">`).join("")}</datalist></label>
+    <label class="f c2">Assunto<input class="inp" id="${prefix}-topic" maxlength="140" value="${esc(e.topic||"")}" placeholder="Ex.: Arritmias, vias da dor"></label>
+    <div class="f c6" style="display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:500;color:var(--ink-2)">Tipo
+      <div class="types" id="${prefix}-type">${TYPES.map(t => `<button type="button" data-v="${t.id}" aria-pressed="${e.type===t.id}">${t.n}</button>`).join("")}</div></div>
+    <label class="f c1">Questões<input class="inp mono" type="number" min="0" max="2000" inputmode="numeric" id="${prefix}-q" value="${e.q ?? ""}" placeholder="0"></label>
+    <label class="f c1">Acertos<input class="inp mono" type="number" min="0" max="2000" inputmode="numeric" id="${prefix}-ok" value="${e.ok ?? ""}" placeholder="0"></label>
+    <label class="f c1">Tempo (min)<input class="inp mono" type="number" min="0" max="1440" inputmode="numeric" id="${prefix}-min" value="${e.min ?? ""}" placeholder="0"></label>
+    <label class="f c3">Observação<input class="inp" id="${prefix}-note" maxlength="300" value="${esc(e.note||"")}" placeholder="Erros recorrentes, o que revisar…"></label>`;
+}
+function readEntryForm(root, prefix, base){
+  const v = id => root.querySelector(`#${prefix}-${id}`).value;
+  const num = id => { const s = v(id).trim(); if (s === "") return null; const n = Math.floor(Number(s)); return Number.isFinite(n) && n >= 0 ? n : NaN; };
+  const date = v("date"), subject = v("subject").trim(), topic = v("topic").trim();
+  const q = num("q"), ok = num("ok"), min = num("min");
+  const typeBtn = root.querySelector(`#${prefix}-type button[aria-pressed="true"]`);
+  const type = base.type === "tarefa" ? "tarefa" : (typeBtn ? typeBtn.dataset.v : "outro");
+  if (!isISO(date)) return { err:"Escolha a data." };
+  if (!subject) return { err:"Preencha a matéria ou frente." };
+  if ([q, ok, min].some(n => Number.isNaN(n))) return { err:"Use números inteiros positivos em questões, acertos e tempo." };
+  if (ok != null && q == null) return { err:"Informe também o total de questões." };
+  if (ok != null && q != null && ok > q) return { err:"Acertos não podem passar do total de questões." };
+  const e = Object.assign({}, base, { date, subject, topic, type, q, ok, min, note: v("note").trim() });
+  for (const k of ["q","ok","min"]) if (e[k] == null) delete e[k];
+  if (!e.note) delete e.note; if (!e.topic) delete e.topic;
+  return { e };
+}
+function buildLogForm(){
+  const f = $("#logform");
+  f.innerHTML = entryFormHTML({ date: todayISO(), subject: ui.lastSubject || "", type: ui.logType }, "lf") +
+    `<label class="row small c6" style="gap:8px"><input type="checkbox" id="lf-rev"> Criar revisões espaçadas em Pendências (1, 4 e 14 dias depois)</label>
+     <div class="c6 row"><span class="err" id="lf-err" hidden></span><div class="spacer"></div><button class="btn primary" type="submit">${ic("plus")} Registrar</button></div>`;
+  f.querySelector("#lf-type").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; ui.logType = b.dataset.v; saveUI(); f.querySelectorAll("#lf-type button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); });
+}
+$("#logform").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const f = $("#logform"); const er = $("#lf-err");
+  const r = readEntryForm(f, "lf", { id:"e_"+newId() });
+  if (r.err) { er.textContent = r.err; er.hidden = false; return; }
+  er.hidden = true;
+  putEntry(r.e);
+  ui.lastSubject = r.e.subject; saveUI();
+  const withRev = $("#lf-rev").checked;
+  if (withRev) {
+    const label = r.e.subject + (r.e.topic ? " — " + r.e.topic : "");
+    const areas = getMeta().areas; const area = areas.some(a => a.id === "fac") ? "fac" : (areas[0] ? areas[0].id : "fac");
+    [1,4,14].forEach((n, i) => putTask({ id:"t_"+newId(), title:`Revisar (${i+1}ª): ${label}`, area, due:addDays(r.e.date, n), imp:2, est:30, notes:"Criada pela revisão espaçada.", done:false, focus:null, created:new Date().toISOString() }));
+  }
+  ["topic","q","ok","min","note"].forEach(k => { f.querySelector("#lf-"+k).value = ""; });
+  f.querySelector("#lf-rev").checked = false;
+  ui.feitoWeek = weekStart(r.e.date);
+  toast(withRev ? "Registrado · 3 revisões criadas em Pendências" : "Registrado", () => removeEntries(x => x.id === r.e.id));
+  f.querySelector("#lf-topic").focus();
+});
+$("#wk-prev").onclick = () => { ui.feitoWeek = addDays(ui.feitoWeek, -7); renderFeito(); };
+$("#wk-next").onclick = () => { ui.feitoWeek = addDays(ui.feitoWeek, 7); renderFeito(); };
+$("#wk-today").onclick = () => { ui.feitoWeek = weekStart(todayISO()); renderFeito(); };
+$("#feito-mode").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; ui.feitoMode = b.dataset.mode; saveUI(); renderFeito(); });
+
+function renderFeito(){
+  const today = todayISO(); const ws = ui.feitoWeek; const we = addDays(ws, 6);
+  document.querySelectorAll("#feito-mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === ui.feitoMode)));
+  $("#wk-today").hidden = ws === weekStart(today);
+  $("#wk-lbl").textContent = ws === weekStart(today) ? `Esta semana · ${fmtWeek(ws)}` : fmtWeek(ws);
+  // atualiza sugestões de matérias sem mexer no que está sendo digitado
+  const dl = $("#lf-subjects"); if (dl) { const html = subjectsList().map(s => `<option value="${esc(s)}">`).join(""); if (dl.innerHTML !== html) dl.innerHTML = html; }
+  const body = $("#feito-body");
+  if (!Store.ready) { body.innerHTML = `<div class="empty">Carregando…</div>`; return; }
+  const all = allEntries();
+  if (ui.feitoMode === "grade") {
+    const N = 10; const weeks = []; for (let i = N-1; i >= 0; i--) weeks.push(addDays(ws, -7*i));
+    const from = weeks[0];
+    const ents = all.filter(e => e.date >= from && e.date <= we && (ui.gridTasks || e.type !== "tarefa"));
+    const rows = [...new Set(ents.map(e => e.subject || "—"))].sort((a,b) => a.localeCompare(b, "pt-BR"));
+    const cur = weekStart(today);
+    body.innerHTML = `<div class="row small"><span class="muted">Linhas: matérias. Colunas: semanas (início na segunda). Toque num item para editar.</span><div class="spacer"></div>
+      <label class="row" style="gap:6px"><input type="checkbox" id="grid-tasks"${ui.gridTasks?" checked":""}> Incluir pendências concluídas</label></div>` +
+      (rows.length ? `<div class="gridwrap"><table class="sheet"><thead><tr><th class="rowh">Matéria</th>${weeks.map(w => `<th class="${w===cur?"cur":""}">${fmtDM(w)}</th>`).join("")}</tr></thead><tbody>${
+        rows.map(r => `<tr><th class="rowh">${esc(r)}</th>${weeks.map(w => { const we2 = addDays(w,6);
+          const cell = ents.filter(e => (e.subject||"—") === r && e.date >= w && e.date <= we2).sort((a,b) => a.date.localeCompare(b.date));
+          return `<td class="${w===cur?"cur":""}">${cell.map(e => `<span class="ln" data-open-entry="${esc(e.id)}" title="${esc(fmtDM(e.date)+" · "+typeName(e.type)+(e.note?" · "+e.note:""))}">${esc(e.topic || typeName(e.type))}${entryNums(e) ? ` <span class="q">${esc(entryNums(e))}</span>` : ""}</span>`).join("")}</td>`; }).join("")}</tr>`).join("")
+      }</tbody></table></div>` : `<div class="empty">Nada registrado nas 10 semanas até ${fmtWeek(ws)}.</div>`);
+    const gw = body.querySelector(".gridwrap"); if (gw) gw.scrollLeft = gw.scrollWidth;
+    const gt = $("#grid-tasks"); if (gt) gt.onchange = () => { ui.gridTasks = gt.checked; saveUI(); renderFeito(); };
+    return;
+  }
+  const ents = all.filter(e => e.date >= ws && e.date <= we);
+  const study = ents.filter(e => e.type !== "tarefa");
+  const q = study.reduce((s,e) => s + (e.q||0), 0), acc = accuracy(study), mins = study.reduce((s,e) => s + (e.min||0), 0);
+  const nT = ents.length - study.length;
+  let html = `<div class="totals"><span><b>${q}</b>questões</span><span><b>${acc==null?"—":acc+"%"}</b>acerto</span><span><b>${fmtHours(mins)}</b>registradas</span><span><b>${study.length}</b>${study.length===1?"registro de estudo":"registros de estudo"}</span><span><b>${nT}</b>${nT===1?"pendência concluída":"pendências concluídas"}</span></div>`;
+  if (!ents.length) html += `<div class="empty">Nenhum registro nesta semana.${ws === weekStart(today) ? " Use o formulário acima: matéria, assunto e, se fez questões, quantas e quantos acertos." : ""}</div>`;
+  else {
+    const days = [...new Set(ents.map(e => e.date))].sort().reverse();
+    html += days.map(dd => { const list = ents.filter(e => e.date === dd).sort((a,b) => (a.type==="tarefa") - (b.type==="tarefa"));
+      return `<div class="daygroup"><h5>${WDL[toDate(dd).getDay()]} ${fmtDM(dd)}${dd===today?" · hoje":""}</h5>${list.map(e => `<div class="entry" data-open-entry="${esc(e.id)}" role="button" tabindex="0">
+        <span class="tag ${e.type==="tarefa"?"tarefa":""}">${esc(typeName(e.type))}</span>
+        <div class="body"><span class="s">${esc(e.subject)}</span>${e.topic ? ` <span class="t">· ${esc(e.topic)}</span>` : ""}${e.note ? `<div class="note">${esc(e.note)}</div>` : ""}</div>
+        <span class="n">${esc(entryNums(e))}${e.q && e.ok != null ? ` <span class="muted">${Math.round(e.ok/e.q*100)}%</span>` : ""}</span></div>`).join("")}</div>`; }).join("");
+  }
+  body.innerHTML = html;
+}
+document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".entry[data-open-entry]")) { e.preventDefault(); e.target.click(); } });
+
+function openEntryEditor(entry){
+  openModal(`<h3>Editar registro</h3>
+    ${entry.type === "tarefa" ? `<p class="small muted" style="margin:0">Registro criado ao concluir uma pendência.</p>` : ""}
+    <form id="ee" class="logform" style="grid-template-columns:repeat(2,minmax(0,1fr))">${entryFormHTML(entry, "ee")}</form>
+    <div class="err" id="ee-err" hidden></div>
+    <div class="foot"><button class="btn ghost danger" id="ee-del">${ic("trash")} Excluir</button><div class="spacer"></div>
+    <button class="btn" id="ee-c">Cancelar</button><button class="btn primary" id="ee-s">Salvar</button></div>`, m => {
+    m.querySelectorAll("#ee .c1,#ee .c2,#ee .c3,#ee .c6").forEach(x => { x.style.gridColumn = x.classList.contains("c1") ? "span 1" : "1/-1"; });
+    if (entry.type === "tarefa") { const tt = m.querySelector("#ee-type"); if (tt) tt.closest(".f").hidden = true; }
+    m.querySelector("#ee-type").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; m.querySelectorAll("#ee-type button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); });
+    m.querySelector("#ee").addEventListener("submit", e => e.preventDefault());
+    m.querySelector("#ee-c").onclick = closeModal;
+    m.querySelector("#ee-s").onclick = () => { const r = readEntryForm(m, "ee", entry); const er = m.querySelector("#ee-err");
+      if (r.err) { er.textContent = r.err; er.hidden = false; return; } putEntry(r.e); closeModal(); toast("Registro atualizado"); };
+    m.querySelector("#ee-del").onclick = () => { const snap = Object.assign({}, entry); removeEntries(x => x.id === entry.id); closeModal(); toast("Registro excluído", () => putEntry(snap)); };
+  });
+}
+
+/* ---------- PROGRESSO ---------- */
+$("#prog-period").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; ui.period = Number(b.dataset.p); saveUI(); renderProg(); });
+function renderProg(){
+  const today = todayISO(); const cw = weekStart(today);
+  document.querySelectorAll("#prog-period button").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.p) === ui.period)));
+  const body = $("#prog-body");
+  if (!Store.ready) { body.innerHTML = `<div class="empty">Carregando…</div>`; return; }
+  const all = allEntries(); const tasks = allTasks();
+  let start;
+  if (ui.period) start = addDays(cw, -7*(ui.period-1));
+  else { const firsts = all.map(e => e.date).concat(tasks.filter(t => t.doneAt).map(t => t.doneAt)).sort(); start = firsts.length ? weekStart(firsts[0]) : cw; }
+  const ents = all.filter(e => e.date >= start && e.date <= today);
+  const study = ents.filter(e => e.type !== "tarefa");
+  const q = study.reduce((s,e) => s + (e.q||0), 0), acc = accuracy(study), mins = study.reduce((s,e) => s + (e.min||0), 0);
+  const doneP = tasks.filter(t => t.done && t.doneAt && t.doneAt >= start && t.doneAt <= today).length;
+  const activeDays = new Set(ents.map(e => e.date)).size;
+  if (!all.length && !tasks.length) { body.innerHTML = `<div class="empty">O progresso aparece aqui assim que você registrar estudos em <b>Feito</b> ou concluir pendências.</div>`; return; }
+  const H = [];
+  H.push(`<div class="kpis">
+    <div class="kpi"><b>${q}</b><span>questões</span></div><div class="kpi"><b>${acc==null?"—":acc+"%"}</b><span>acerto médio</span></div>
+    <div class="kpi"><b>${fmtHours(mins)}</b><span>estudo registrado</span></div><div class="kpi"><b>${doneP}</b><span>pendências concluídas</span></div>
+    <div class="kpi"><b>${activeDays}</b><span>dias com registro</span></div></div>`);
+  // gráfico semanal
+  const nW = Math.min(26, Math.max(4, ui.period || Math.min(26, diffDays(start, cw)/7 + 1)));
+  const weeks = []; for (let i = nW-1; i >= 0; i--) weeks.push(addDays(cw, -7*i));
+  const vals = weeks.map(w => { const we = addDays(w,6); const s = all.filter(e => e.date >= w && e.date <= we && e.type !== "tarefa");
+    if (ui.metric === "q") return s.reduce((a,e) => a + (e.q||0), 0);
+    if (ui.metric === "h") return Math.round(s.reduce((a,e) => a + (e.min||0), 0)/6)/10;
+    const ac = accuracy(s); return ac == null ? null : ac; });
+  H.push(`<div class="card chart"><div class="row" style="margin-bottom:10px"><h2 class="sec" style="margin:0">Por semana</h2><div class="spacer"></div>
+    <div class="seg" id="metric"><button data-m="q" aria-pressed="${ui.metric==="q"}">Questões</button><button data-m="h" aria-pressed="${ui.metric==="h"}">Horas</button><button data-m="a" aria-pressed="${ui.metric==="a"}">Acerto %</button></div></div>
+    ${barChart(weeks, vals, cw, ui.metric)}</div>`);
+  // mapa de calor + matérias
+  const hw = 26; const hStart = addDays(cw, -7*(hw-1)); const dayScore = {};
+  for (const e of all) if (e.date >= hStart) dayScore[e.date] = (dayScore[e.date]||0) + 1 + Math.floor((e.min||0)/45);
+  let cells = ""; for (let i = 0; i < hw*7; i++) { const d = addDays(hStart, i); const v = dayScore[d] || 0;
+    const cls = d > today ? "fut" : v >= 5 ? "h3" : v >= 3 ? "h2" : v >= 1 ? "h1" : ""; cells += `<i class="${cls}" title="${fmtDM(d)}: ${v ? plural(v,"ponto","pontos") : "sem registro"}"></i>`; }
+  const subj = new Map();
+  for (const e of all) { if (e.type === "tarefa" || !e.subject) continue; const k = e.subject;
+    if (!subj.has(k)) subj.set(k, { n:0, q:0, list:[], min:0, last:"" }); const s = subj.get(k);
+    if (e.date >= start) { s.n++; s.q += e.q||0; s.min += e.min||0; s.list.push(e); } if (e.date > s.last) s.last = e.date; }
+  const subjRows = [...subj].filter(([,s]) => s.n > 0 || !ui.period).sort((a,b) => b[1].last.localeCompare(a[1].last));
+  const stale = [...subj].filter(([,s]) => diffDays(s.last, today) > 14).sort((a,b) => a[1].last.localeCompare(b[1].last));
+  H.push(`<div class="two"><div class="card"><h2 class="sec">Matérias no período <span class="count">${subjRows.length}</span></h2>
+    ${subjRows.length ? `<div class="tblwrap"><table class="tbl"><thead><tr><th>Matéria</th><th>Registros</th><th>Questões</th><th>Acerto</th><th>Tempo</th><th>Último</th></tr></thead><tbody>${
+      subjRows.map(([k,s]) => { const ac = accuracy(s.list); const dd = diffDays(s.last, today);
+        return `<tr class="${dd>14?"stale":""}"><td>${esc(k)}</td><td>${s.n}</td><td>${s.q||"—"}</td><td>${ac==null?"—":ac+"%"}</td><td>${s.min?fmtMin(s.min):"—"}</td><td>${dd===0?"hoje":dd===1?"ontem":`há ${dd} d`}</td></tr>`; }).join("")}</tbody></table></div>`
+      : `<p class="small muted">Nenhum estudo registrado no período.</p>`}
+    ${stale.length ? `<p class="small" style="margin:12px 0 0"><b>Sem contato há mais de 14 dias:</b> <span class="muted">${stale.slice(0,8).map(([k]) => esc(k)).join(", ")}${stale.length>8?"…":""}</span></p>` : ""}</div>
+    <div class="stack"><div class="card"><h2 class="sec">Constância <span class="count">26 semanas</span></h2>
+      <div class="heatwrap"><div class="heatdays"><span>seg</span><span></span><span>qua</span><span></span><span>sex</span><span></span><span>dom</span></div><div class="heat" aria-label="Mapa de dias com registro">${cells}</div></div>
+      <p class="small muted" style="margin:8px 0 0">Cada registro conta um ponto; cada 45 min registrados somam mais um.</p></div>
+      ${areaCard(tasks, start, today)}</div></div>`);
+  body.innerHTML = H.join("");
+  $("#metric").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; ui.metric = b.dataset.m; saveUI(); renderProg(); });
+}
+function areaCard(tasks, start, today){
+  const areas = getMeta().areas;
+  const rows = areas.map(a => { const ts = tasks.filter(t => t.area === a.id);
+    return { a, done: ts.filter(t => t.done && t.doneAt >= start && t.doneAt <= today).length, open: ts.filter(t => !t.done).length, late: ts.filter(t => !t.done && t.due && t.due < today).length }; });
+  const max = Math.max(1, ...rows.map(r => r.done));
+  return `<div class="card"><h2 class="sec">Pendências por área</h2>${rows.map(r => `<div class="areabar" style="--c:${esc(r.a.color)}"><span class="nm">${esc(r.a.name)}</span>
+    <span class="track"><i style="width:${Math.round(r.done/max*100)}%"></i></span><span class="mono small">${r.done} feitas · ${r.open} abertas${r.late ? ` · <b style="color:var(--bad)">${r.late} atras.</b>` : ""}</span></div>`).join("")}
+    <p class="small muted" style="margin:8px 0 0">Barra: concluídas no período.</p></div>`;
+}
+function barChart(weeks, vals, cw, metric){
+  const W = 640, H = 200, padL = 34, padB = 26, padT = 18, padR = 8;
+  const nums = vals.filter(v => v != null);
+  let max = metric === "a" ? 100 : Math.max(1, ...nums);
+  if (metric !== "a") { const step = niceStep(max); max = Math.ceil(max/step)*step; }
+  const iw = W - padL - padR, ih = H - padT - padB; const bw = iw / weeks.length;
+  const y = v => padT + ih - (v/max)*ih;
+  const ticks = metric === "a" ? [0,50,100] : [0, max/2, max];
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico semanal">`;
+  ticks.forEach(t => { s += `<line class="axis" x1="${padL}" x2="${W-padR}" y1="${y(t)}" y2="${y(t)}" stroke-dasharray="${t?"3 4":""}"/><text x="${padL-6}" y="${y(t)+3}" text-anchor="end">${fmtTick(t, metric)}</text>`; });
+  const every = weeks.length > 14 ? 3 : weeks.length > 8 ? 2 : 1;
+  weeks.forEach((w, i) => { const v = vals[i]; const x = padL + i*bw + bw*0.18; const bwi = bw*0.64;
+    if (v != null && v > 0) { s += `<rect class="bar${w===cw?" cur":""}" x="${x.toFixed(1)}" y="${y(v).toFixed(1)}" width="${bwi.toFixed(1)}" height="${(padT+ih-y(v)).toFixed(1)}" rx="2"><title>${fmtWeek(w)}: ${fmtTick(v, metric)}</title></rect>`;
+      if (weeks.length <= 14) s += `<text class="val" x="${(x+bwi/2).toFixed(1)}" y="${(y(v)-4).toFixed(1)}" text-anchor="middle">${fmtTick(v, metric)}</text>`; }
+    if (i % every === (weeks.length-1) % every) s += `<text x="${(padL + i*bw + bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${fmtDM(w)}</text>`; });
+  return s + `</svg>${nums.length ? "" : `<p class="small muted" style="margin:6px 0 0">Sem dados para esta métrica no período.</p>`}`;
+}
+function niceStep(max){ const raw = max/4; const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw/p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+function fmtTick(v, m){ if (m === "a") return Math.round(v)+"%"; if (m === "h") return String(Math.round(v*10)/10).replace(".", ","); return String(Math.round(v)); }
+
+/* ---------- ajustes ---------- */
+$("#btn-settings").onclick = openSettings;
+function openSettings(){
+  const meta = getMeta();
+  let areas = meta.areas.map(a => Object.assign({}, a));
+  const draw = m => {
+    const tasks = allTasks();
+    m.querySelector("#st-areas").innerHTML = areas.map((a, i) => { const n = tasks.filter(t => t.area === a.id && !t.done).length;
+      return `<div class="arearow" data-i="${i}"><span class="dot" style="--c:${esc(a.color)}"></span><input class="inp" data-name="${i}" value="${esc(a.name)}" maxlength="40" aria-label="Nome da área">
+      <button class="btn ghost sm danger" data-rm="${i}" title="${n ? n + " pendências abertas ficarão sem área" : "Remover"}">${ic("trash")}</button>
+      <div></div><div class="swatches">${SWATCHES.map(c => `<button type="button" data-sw="${i}" data-c="${c}" style="--c:${c}" aria-label="Cor" aria-pressed="${a.color===c}"></button>`).join("")}</div><div></div></div>`; }).join("");
+  };
+  const hasEx = allTasks().some(t => t.ex) || allEntries().some(e => e.ex);
+  openModal(`<h3>Ajustes</h3>
+    <div><h2 class="sec">Áreas</h2><div id="st-areas" class="stack" style="gap:10px"></div>
+      <div class="row" style="margin-top:10px"><button class="btn sm" id="st-add">${ic("plus")} Nova área</button><span class="small muted">Alterações salvas automaticamente.</span></div></div>
+    <hr class="sep">
+    <label class="row small" style="gap:8px"><input type="checkbox" id="st-log"${meta.settings.logOnComplete?" checked":""}> Ao concluir uma pendência, registrar em Feito automaticamente</label>
+    <hr class="sep">
+    <div><h2 class="sec">Backup</h2><p class="small muted" style="margin:0 0 8px">${Store.mode === "cloud" ? "Seus dados ficam salvos na sua conta e aparecem em qualquer aparelho em que você abrir este link logado." : "Neste modo os dados ficam só neste navegador. Exporte um backup de vez em quando."}</p>
+      <div class="row"><button class="btn sm" id="st-exp">Exportar backup (.json)</button><label class="btn sm" style="cursor:pointer">Importar backup<input type="file" id="st-imp" accept=".json,application/json" hidden></label></div>
+      <div id="st-impmsg" class="small" style="margin-top:8px"></div></div>
+    <hr class="sep">
+    <div class="row"><span class="small muted">Exemplos:</span><button class="btn sm" id="st-ex-load">Carregar exemplos</button>${hasEx ? `<button class="btn sm danger" id="st-ex-rm">Remover exemplos</button>` : ""}<div class="spacer"></div><button class="btn" id="st-close">Fechar</button></div>`, m => {
+    draw(m);
+    const persist = () => saveMeta({ areas: areas.map(a => Object.assign({}, a, { name: a.name.trim() || "Sem nome" })) });
+    m.querySelector("#st-areas").addEventListener("input", e => { const i = e.target.dataset.name; if (i != null) areas[Number(i)].name = e.target.value; });
+    m.querySelector("#st-areas").addEventListener("change", e => { if (e.target.dataset.name != null) persist(); });
+    m.querySelector("#st-areas").addEventListener("click", e => {
+      const sw = e.target.closest("[data-sw]"); if (sw) { areas[Number(sw.dataset.sw)].color = sw.dataset.c; persist(); draw(m); return; }
+      const rm = e.target.closest("[data-rm]"); if (rm) { if (areas.length <= 1) { toast("Mantenha pelo menos uma área."); return; }
+        const i = Number(rm.dataset.rm); const removed = areas[i]; areas.splice(i, 1); persist(); draw(m);
+        toast(`Área "${removed.name}" removida`, () => { areas.splice(Math.min(i, areas.length), 0, removed); persist(); if (document.querySelector("#st-areas")) draw(m); }); }
+    });
+    m.querySelector("#st-add").onclick = () => { areas.push({ id:"a_"+newId(), name:"Nova área", color:SWATCHES[areas.length % SWATCHES.length] }); persist(); draw(m); const ins = m.querySelectorAll("[data-name]"); const last = ins[ins.length-1]; if (last) { last.focus(); last.select(); } };
+    m.querySelector("#st-log").onchange = e => { const s = Object.assign({}, getMeta().settings, { logOnComplete: e.target.checked }); saveMeta({ settings: s }); };
+    m.querySelector("#st-exp").onclick = exportBackup;
+    m.querySelector("#st-imp").onchange = e => importBackup(e.target.files && e.target.files[0], m.querySelector("#st-impmsg"));
+    m.querySelector("#st-ex-load").onclick = () => { loadExamples(); closeModal(); };
+    const rmx = m.querySelector("#st-ex-rm"); if (rmx) rmx.onclick = () => { removeExamples(); closeModal(); };
+    m.querySelector("#st-close").onclick = closeModal;
+  });
+}
+async function exportBackup(){
+  const data = { app:"plantao", version:1, exportedAt:new Date().toISOString(), docs:Object.fromEntries(Store.docs) };
+  const text = JSON.stringify(data, null, 1); const name = `plantao-backup-${todayISO()}.json`;
+  let dl = null; try { dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; } catch(e) {}
+  if (dl) { try { await dl.save({ filename:name, data:text }); toast("Backup salvo"); } catch(e) { if (!(e && e.code === "declined")) toast("Não foi possível salvar o arquivo aqui."); } return; }
+  try { const b = new Blob([text], { type:"application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+  catch(e) { toast("Não foi possível baixar o arquivo neste navegador."); }
+}
+function importBackup(file, msgEl){
+  if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    let o; try { o = JSON.parse(rd.result); } catch(e) { msgEl.innerHTML = `<span class="err">Arquivo inválido: não é um JSON.</span>`; return; }
+    if (!o || o.app !== "plantao" || !o.docs || typeof o.docs !== "object") { msgEl.innerHTML = `<span class="err">Este arquivo não é um backup do Plantão.</span>`; return; }
+    const ids = Object.keys(o.docs).filter(k => /^(meta|t_[\w.~:@+-]+|w_\d{4}-\d{2}-\d{2})$/.test(k));
+    const nT = ids.filter(k => k.startsWith("t_")).length, nW = ids.filter(k => k.startsWith("w_")).length;
+    msgEl.innerHTML = `<div class="banner" style="margin:0">O backup tem ${nT} pendências e ${nW} semanas de registros. Ele substitui os itens com o mesmo identificador e mantém os demais.
+      <div class="row" style="margin-top:8px"><button class="btn sm primary" id="imp-go">Importar</button><button class="btn sm" id="imp-no">Cancelar</button></div></div>`;
+    msgEl.querySelector("#imp-no").onclick = () => { msgEl.innerHTML = ""; };
+    msgEl.querySelector("#imp-go").onclick = () => { ids.forEach(k => { const v = o.docs[k]; if (v && typeof v === "object") Store.write(k, v); }); msgEl.innerHTML = `<span>Importação enviada (${ids.length} itens).</span>`; toast("Backup importado"); };
+  };
+  rd.onerror = () => { msgEl.innerHTML = `<span class="err">Não consegui ler o arquivo.</span>`; };
+  rd.readAsText(file);
+}
+function loadExamples(){
+  const today = todayISO(); const mk = (title, area, dueOff, imp, est, extra) => putTask(Object.assign({ id:"t_"+newId(), title:"[Exemplo] "+title, area, due: dueOff == null ? null : addDays(today, dueOff), imp, est, notes:"", done:false, focus:null, created:new Date().toISOString(), ex:true }, extra||{}));
+  mk("Enviar resumo do caso para a reunião da liga", "liga", -1, 2, 30);
+  mk("Revisar resultados com a orientadora do PIBIC", "pibic", 0, 3, 60);
+  mk("Estudar para a prova de Farmacologia", "fac", 4, 3, 300);
+  mk("Corrigir a introdução do manuscrito", "pesq", 2, 3, 120);
+  mk("Pagar a conta de luz de casa", "fam", 1, 2, 15);
+  mk("Responder formulário de inscrição do congresso", "ext", 9, 1, 30);
+  mk("Ler artigo sugerido pelo grupo", "pesq", null, 1, 60);
+  mk("Separar material da monitoria", "fac", -3, 2, 30, { done:true, doneAt:addDays(today,-2) });
+  const E = [];
+  const add = (off, subject, topic, type, q, ok, min) => { const e = { id:"e_"+newId(), date:addDays(today, off), subject, topic, type, ex:true, note:"exemplo" }; if (q != null) { e.q = q; e.ok = ok; } if (min) e.min = min; E.push(e); };
+  add(0, "Cardiologia", "Arritmias", "questoes", 30, 24, 50);
+  add(-1, "Farmacologia", "Vias de administração", "leitura", null, null, 40);
+  add(-2, "Neuroanatomia", "Vias da dor", "revisao", 10, 8, 30);
+  add(-6, "Cardiologia", "ECG básico", "questoes", 25, 17, 45);
+  add(-9, "Farmacologia", "Farmacocinética", "questoes", 20, 15, 35);
+  add(-13, "Neuroanatomia", "Tronco encefálico", "aula", null, null, 90);
+  add(-16, "Clínica médica", "Hipertensão", "questoes", 40, 31, 70);
+  add(-23, "Clínica médica", "Diabetes", "resumo", null, null, 60);
+  add(-30, "Cardiologia", "Insuficiência cardíaca", "questoes", 30, 21, 55);
+  const byWeek = {}; E.forEach(e => { const k = "w_" + weekStart(e.date); (byWeek[k] = byWeek[k] || []).push(e); });
+  Object.keys(byWeek).forEach(k => { const cur = Store.docs.get(k); const list = (cur && Array.isArray(cur.entries) ? cur.entries.slice() : []).concat(byWeek[k]); Store.write(k, { kind:"week", week:k.slice(2), entries:list }); });
+  toast("Exemplos carregados. Remova-os em Ajustes quando quiser.");
+}
+function removeExamples(){
+  allTasks().filter(t => t.ex).forEach(t => Store.write(t.id, null));
+  removeEntries(e => e.ex);
+  toast("Exemplos removidos");
+}
+
+/* ---------- status / banner ---------- */
+function renderStatus(){
+  const el = $("#status"); let cls = "", txt = "";
+  if (!Store.ready) { cls = "busy"; txt = "Carregando…"; }
+  else if (Store.mode === "cloud") {
+    if (Store.error) { cls = "err"; txt = "Erro ao salvar"; }
+    else if (Store.pending > 0) { cls = "busy"; txt = "Salvando…"; }
+    else { cls = ""; txt = "Salvo na sua conta"; }
+  } else if (Store.mode === "local") { cls = "local"; txt = "Só neste navegador"; }
+  else { cls = "err"; txt = "Sem armazenamento"; }
+  el.className = "status " + cls; el.lastElementChild.textContent = txt;
+  let b = "";
+  if (Store.ready && Store.mode === "memory") b = "Este navegador não permite guardar dados. O que você adicionar some ao fechar a página. Abra pelo link do claude.ai, com sua conta, para salvar.";
+  else if (Store.ready && Store.mode === "local") b = "Modo local: os dados ficam só neste navegador. Abrindo pelo link do claude.ai com sua conta, eles ficam salvos e aparecem no celular e no computador.";
+  if (Store.mode === "cloud" && Store.error === "revoked") b = "O acesso a este painel mudou. Recarregue a página para continuar salvando.";
+  $("#banner").innerHTML = b ? `<div class="banner">${esc(b)}</div>` : "";
+  const late = allTasks().filter(t => !t.done && t.due && t.due < todayISO()).length;
+  const pb = $('#tabs button[data-tab="pend"] .badge'); if (pb) { pb.textContent = late; pb.hidden = !late; }
+}
+
+/* ---------- render ---------- */
+let lastDay = todayISO();
+function render(){
+  renderStatus(); fillCaptureAreas();
+  if (ui.tab === "hoje") renderHoje(); else if (ui.tab === "pend") renderPend(); else if (ui.tab === "feito") renderFeito(); else renderProg();
+}
+let rq = false;
+Store.on(() => { if (rq) return; rq = true; requestAnimationFrame(() => { rq = false; render(); }); });
+setInterval(() => { const t = todayISO(); if (t !== lastDay) { lastDay = t; ui.feitoWeek = weekStart(t); const d = $("#lf-date"); if (d && d.value < t) d.value = t; render(); } }, 60000);
+
+/* ---------- inicialização ---------- */
+$("#btn-settings").innerHTML = ic("gear");
+$("#cap-add").innerHTML = `${ic("plus")}<span>Adicionar</span>`;
+$("#wk-prev").innerHTML = ic("left"); $("#wk-next").innerHTML = ic("right");
+document.querySelectorAll("#tabs button").forEach(b => { const t = TABS.find(x => x[0] === b.dataset.tab); b.innerHTML = `${ic(t[2])}<span>${t[1]}</span>${t[0]==="pend" ? '<span class="badge" hidden></span>' : ""}`; });
+buildLogForm();
+if (!["hoje","pend","feito","prog"].includes(ui.tab)) ui.tab = "hoje";
+setTab(ui.tab);
+Store.init().then(render, () => { Store.initLocal(); render(); });
+})();
+</script>
+</body></html>
